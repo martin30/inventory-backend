@@ -1,6 +1,9 @@
 package com.company.inventory.services;
 
+import com.company.inventory.controller.CategoryRestController;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,12 +18,18 @@ import com.company.inventory.response.CategoryResponseRest;
 @Service
 public class CategoryServiceImpl implements ICategoryService{
 	
+	/**private final CategoryRestController categoryRestController;
+	CategoryServiceImpl(CategoryRestController categoryRestController) {
+		this.categoryRestController = categoryRestController;
+	}**/
+	
 	@Autowired
 	private ICategoryDao categoryDao;
+
 	
 	@Override
 	@Transactional(readOnly=true)
-	public ResponseEntity<CategoryResponseRest> serach() {
+	public ResponseEntity<CategoryResponseRest> search() {
 		
 		CategoryResponseRest response = new CategoryResponseRest();
 		try {
@@ -29,7 +38,7 @@ public class CategoryServiceImpl implements ICategoryService{
 			response.setMetadata("Respuesta ok","00","Respuesta exitosa");
 			
 		}catch (Exception e) {
-			response.setMetadata("Respuesta ok", "-1", "Error al consultar ");
+			response.setMetadata("Respuesta ok", "-1", "Error al consultar");
 			e.getStackTrace();
 			return new ResponseEntity<CategoryResponseRest>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}  
@@ -37,5 +46,28 @@ public class CategoryServiceImpl implements ICategoryService{
 		
 	}
 
-	
+	@Override
+	@Transactional(readOnly= true)
+	public ResponseEntity<CategoryResponseRest> searchbById(Long Id) {
+		CategoryResponseRest response = new CategoryResponseRest();
+		List<Category> list = new ArrayList<>();
+		try {
+			Optional<Category> category= categoryDao.findById(Id);
+			
+			if(category.isPresent()) {
+				list.add(category.get());
+				response.getCategoryResponse().setCategory(list);
+				response.setMetadata("Respuesta ok", "00", "Categoria encontrada");
+			}else {
+				response.setMetadata("Sin respuesta", "-1", "Categoria no encontrada");
+				return new ResponseEntity<CategoryResponseRest>(response, HttpStatus.NOT_FOUND);
+			} 
+			
+		}catch (Exception e) {
+			response.setMetadata("Respuesta Ok", "-1", "Error al consultar por Id");
+			e.getStackTrace();
+			return new ResponseEntity<CategoryResponseRest>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		return new ResponseEntity<CategoryResponseRest>(response, HttpStatus.OK);
+	}	
 }
