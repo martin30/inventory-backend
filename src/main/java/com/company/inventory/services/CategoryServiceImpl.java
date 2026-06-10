@@ -1,5 +1,6 @@
 package com.company.inventory.services;
 
+import com.company.inventory.InventoryApplication;
 import com.company.inventory.controller.CategoryRestController;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,13 +19,20 @@ import com.company.inventory.response.CategoryResponseRest;
 @Service
 public class CategoryServiceImpl implements ICategoryService{
 	
+	
 	/**private final CategoryRestController categoryRestController;
 	CategoryServiceImpl(CategoryRestController categoryRestController) {
 		this.categoryRestController = categoryRestController;
-	}**/
+	private final InventoryApplication inventoryApplication;
+	CategoryServiceImpl(InventoryApplication inventoryApplication) {
+		this.inventoryApplication = inventoryApplication;
+	}}**/
 	
 	@Autowired
 	private ICategoryDao categoryDao;
+
+
+	
 
 	
 	@Override
@@ -96,5 +104,40 @@ public class CategoryServiceImpl implements ICategoryService{
 			
 		}
 		return new ResponseEntity<CategoryResponseRest>(response, HttpStatus.OK);
-	}	
-}
+	}
+
+	@Override
+	@Transactional()
+	public ResponseEntity<CategoryResponseRest> update(Category category, Long id) {
+		CategoryResponseRest response= new CategoryResponseRest();
+		List<Category>list=new ArrayList<>();
+		
+		try {
+			
+			Optional<Category> categorySearch = categoryDao.findById(id);
+			if (categorySearch.isPresent()) {
+				//Se procederá a actualizar el registro
+				categorySearch.get().setName(category.getName());
+				categorySearch.get().setDescription(category.getDescription());
+				
+				Category categoryToUpdate = categoryDao.save(categorySearch.get());
+				if(categoryToUpdate !=null) {
+					list.add(categoryToUpdate);
+					response.getCategoryResponse().setCategory(list);
+					response.setMetadata("Respuesta ok", "00", "Categoria actualizada");
+				}else {
+					response.setMetadata("Respuesta no", "-1", "Categoria no actualizada");
+					return new ResponseEntity<CategoryResponseRest>(response, HttpStatus.BAD_REQUEST);
+				}
+				
+			}else {
+				response.setMetadata("Respuesta no", "-1", "Categoria no encontrada");
+				return new ResponseEntity<CategoryResponseRest>(response, HttpStatus.NOT_FOUND); 
+			}
+		}catch (Exception e) {
+			
+		}
+		return new ResponseEntity<CategoryResponseRest>(response, HttpStatus.OK);
+	 }
+	}
+	
