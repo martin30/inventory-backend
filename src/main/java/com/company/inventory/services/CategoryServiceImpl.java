@@ -1,7 +1,6 @@
 package com.company.inventory.services;
 
 import com.company.inventory.InventoryApplication;
-import com.company.inventory.controller.CategoryRestController;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -20,21 +19,9 @@ import com.company.inventory.response.CategoryResponseRest;
 public class CategoryServiceImpl implements ICategoryService{
 	
 	
-	/**private final CategoryRestController categoryRestController;
-	CategoryServiceImpl(CategoryRestController categoryRestController) {
-		this.categoryRestController = categoryRestController;
-	private final InventoryApplication inventoryApplication;
-	CategoryServiceImpl(InventoryApplication inventoryApplication) {
-		this.inventoryApplication = inventoryApplication;
-	}}**/
-	
 	@Autowired
 	private ICategoryDao categoryDao;
 
-
-	
-
-	
 	@Override
 	@Transactional(readOnly=true)
 	public ResponseEntity<CategoryResponseRest> search() {
@@ -139,5 +126,21 @@ public class CategoryServiceImpl implements ICategoryService{
 		}
 		return new ResponseEntity<CategoryResponseRest>(response, HttpStatus.OK);
 	 }
+
+	@Override
+	@Transactional
+	public ResponseEntity<CategoryResponseRest> deleteById(Long id) {
+		CategoryResponseRest response = new CategoryResponseRest();
+		try {
+			categoryDao.deleteById(id);
+			response.setMetadata("Respuesta Ok", "00", "Registro eliminado");
+			
+		}catch (Exception e) {
+			response.setMetadata("Respuesta no", "-1", "Error al eliminar");
+			return new ResponseEntity<CategoryResponseRest>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+			return new ResponseEntity<CategoryResponseRest>(response, HttpStatus.OK);
+	}
+	
 	}
 	
